@@ -9,7 +9,7 @@ class TokenService {
       expiresIn: "1h",
     });
 
-    const refreshToken = jwt.sign(payload, config.get("refreshSecret"));
+    const refreshToken = jwt.sign(payload, config.get("refreshSecret"), {expiresIn: "30d"});
     return {
       accessToken,
       refreshToken,
