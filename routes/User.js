@@ -20,8 +20,9 @@ userRouter.post("/signUp", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = await UserModel.create({
-      ...req.body,
-      password: hashedPassword,
+      name,
+      email,
+      password: hashedPassword
     });
 
     const tokens = classToken.generate({ _id: newUser._id });
@@ -64,8 +65,7 @@ userRouter.post("/profile", async (req, res) => {
     // const token = req.headers.authorization.split(" ")[1];
     const { token } = req.body;
     if (token) {
-      // const decoded = classToken.validateAccess(token);
-      const decoded = jwt.verify(token, config.get("accessSecret"));
+      const decoded = classToken.validateAccess(token);
       const user = await UserModel.findById(decoded._id);
 
       const tokens = await classToken.generate({ _id: user._id });
@@ -75,8 +75,8 @@ userRouter.post("/profile", async (req, res) => {
       res.status(400).json({ message: "No token" });
     }
   } catch (e) {
-    console.log(e);
-    res.status(500).json({ message: `${e}` });
+    console.log(chalk.red(e));
+    res.status(401).json({ message: `Токен умер` });
   }
 });
 
@@ -84,19 +84,19 @@ userRouter.post("/profile", async (req, res) => {
 userRouter.post("/token", async (req, res) => {
   try {
     const { refresh_token: refreshToken } = req.body;
+
     //  в дате id пользователя к которому прекреплен токен
     const data = classToken.validateRefresh(refreshToken);
     const dbToken = await classToken.findToken(refreshToken);
 
-    const user = await UserModel.findById(data._id);
-
-    if (!data || !dbToken || data._id !== dbToken?.user?.toString()) {
+    if (!data || !dbToken) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const tokens = classToken.generate({ _id: data._id });
+    const user = await UserModel.findById(data._id )
+    const tokens = classToken.generate({ _id: user._id });
 
-    await classToken.save(data._id, tokens.refreshToken);
+    await classToken.save(user._id, tokens.refreshToken);
 
     res.status(200).send({ ...tokens, user });
   } catch (e) {
