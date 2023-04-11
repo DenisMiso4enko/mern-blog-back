@@ -48,7 +48,40 @@ postRouter.post("/create", async (req, res) => {
 	}
 });
 
-postRouter.put("/like",  async (req, res) => {
+postRouter.patch("/update/:id", async (req, res) => {
+	try {
+		const { id } = req.params;
+		await PostModel.updateOne({_id: id,}, {
+				...req.body,
+			}
+		);
+
+		res.status(200).json({
+			success: true,
+			message: "Продукт обновлен",
+		});
+	} catch (e) {
+		console.log(chalk.red(e));
+		res.status(500).json({message: e});
+	}
+});
+
+postRouter.delete("/delete/:id", async (req, res) => {
+	try {
+		const { id } = req.params;
+		await PostModel.findOneAndDelete(id)
+
+		res.status(200).json({
+			success: true,
+			message: "Продукт удаллен",
+		});
+	} catch (e) {
+		console.log(chalk.red(e));
+		res.status(500).json({message: e});
+	}
+});
+
+postRouter.put("/like", async (req, res) => {
 	try {
 		const {postId, userId} = req.body
 		const result = await PostModel.findByIdAndUpdate(postId, {$push: {likes: userId}}, {new: true})
@@ -60,22 +93,22 @@ postRouter.put("/like",  async (req, res) => {
 })
 
 postRouter.put("/dislike", async (req, res) => {
-  try {
+	try {
 		const {postId, userId} = req.body
 		const result = await PostModel.findByIdAndUpdate(postId, {$pull: {likes: userId}}, {new: true})
 		res.status(200).json(result)
-  } catch (e) {
-    console.log(chalk.red(e));
-    res.status(500).json({message: e});
-  }
+	} catch (e) {
+		console.log(chalk.red(e));
+		res.status(500).json({message: e});
+	}
 })
 
 postRouter.get("/search", async (req, res) => {
 	try {
 		const {searchQuery} = req.query
-		const title = { $regex: searchQuery, $options: "i" };
+		const title = {$regex: searchQuery, $options: "i"};
 
-		const results = await PostModel.find({title}).sort({ createdAt: -1 });
+		const results = await PostModel.find({title}).sort({createdAt: -1});
 
 		if (results) {
 			res.status(200).json(results)
