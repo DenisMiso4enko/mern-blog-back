@@ -1,15 +1,15 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, } from "mongoose";
 
 const schema = new Schema(
 	{
-		userId: String,
+		userId: {type: Schema.Types.ObjectId},
 		userName: String,
 		title: { type: String, require: true },
 		description: String,
 		text: String,
 		image: String,
-		likes: {type: Number, default: 0},
-		dislikes: {type: Number, default: 0},
+		likes: [{type: Schema.Types.ObjectId, ref: "User"}],
+		dislikes: [{type: String, ref: "User"}],
 		views: {type: Number, default: 0},
 
 
