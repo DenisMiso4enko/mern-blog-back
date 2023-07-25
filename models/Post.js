@@ -11,8 +11,6 @@ const schema = new Schema(
 		likes: [{type: Schema.Types.ObjectId, ref: "User"}],
 		dislikes: [{type: String, ref: "User"}],
 		views: {type: Number, default: 0},
-
-
 	},
 	{
 		timestamps: true,
